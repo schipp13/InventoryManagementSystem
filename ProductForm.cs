@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -14,21 +14,22 @@ namespace Saige_Chipp
     public partial class ProductForm : Form
     {
         // Global Variables
-        Product updateProduct = new Product();
+        int _productIndex;
+        Product updateProduct;
         // Creates instance of a new Product
         Product _Product = new Product();
-
-        int _productIndex;
+        
 
         public ProductForm(String labelText, int productIndex)
         {
+           
             InitializeComponent();
-            labelTitle.Text = labelText;
-            _productIndex = productIndex;
+            labelTitle.Text = labelText; // changes the title label
+            _productIndex = productIndex; 
 
             AllPartsView.DataSource = Inventory.AllParts;
-           // AssociatedPartsView.DataSource = _Product.AssociatedParts;
-
+            AssociatedPartsView.DataSource = _Product.AssociatedParts;
+       
             // Sets the background color of empty Textboxes
             if (String.IsNullOrEmpty(productName.Text))
             {
@@ -75,6 +76,7 @@ namespace Saige_Chipp
                 Price.Text = updateProduct.Price.ToString();
                 Max.Text = updateProduct.Max.ToString();
                 Min.Text = updateProduct.Min.ToString();
+
                 // Gets the associated parts and populates the datagridview
                 AssociatedPartsView.DataSource = updateProduct.AssociatedParts;
             }
@@ -91,14 +93,21 @@ namespace Saige_Chipp
 
         public void addAssociatedPart_Click(object sender, EventArgs e)
         {
-             // Get selected parts row elements
-             Part _AssociatedPart = (Part)AllPartsView.CurrentRow.DataBoundItem;
+            if (labelTitle.Text != "Modify Product")
+            {
+                // Pass selected parts row elements to be added to the AssociatedParts list
+                _Product.addAssociatedPart((Part)AllPartsView.CurrentRow.DataBoundItem);
 
-             // Pass selected parts row elements to be added to the AssociatedParts list
-            _Product.addAssociatedPart(_AssociatedPart);
+                // Populates datagridview with associated parts
+                AssociatedPartsView.DataSource = _Product.AssociatedParts;
 
-            // Populates datagridview with associated parts
-            AssociatedPartsView.DataSource = _Product.AssociatedParts;
+            }
+            else
+            {
+                updateProduct.addAssociatedPart((Part)AllPartsView.CurrentRow.DataBoundItem);
+                // Populates datagridview with associated parts
+                AssociatedPartsView.DataSource = updateProduct.AssociatedParts;
+            }
         }
 
         private void lookupAssociatedPart_Click(object sender, EventArgs e)
@@ -128,45 +137,50 @@ namespace Saige_Chipp
 
         private void buttonSave_Click(object sender, EventArgs e)
         {
-           
-            if (labelTitle.Text == "Add Product")
-          {
-              ProductID.Text = (Inventory.Products.Count()).ToString();
-
-              // Sets the objects attributes
-                _Product.ProductID = int.Parse(ProductID.Text);
-                _Product.Name = productName.Text;
-                _Product.InStock = int.Parse(InStock.Text);
-                _Product.Price = decimal.Parse(Price.Text);
-                _Product.Max = int.Parse(Max.Text);
-                _Product.Min = int.Parse(Min.Text);
-                
-             // Adds product to the Product List
-              Inventory.addProduct(_Product);
-          }
-         else
-          {
-                // reassigns the data to the new part
-                updateProduct.ProductID = int.Parse(ProductID.Text);
-                updateProduct.Name = productName.Text;
-                updateProduct.InStock = int.Parse(InStock.Text);
-                updateProduct.Price = decimal.Parse(Price.Text);
-                updateProduct.Max = int.Parse(Max.Text);
-                updateProduct.Min = int.Parse(Min.Text);
-
-                // Passes the part index and the new part
-                Inventory.updateProduct(_productIndex, updateProduct);
-          }
-              // Makes sure the Min, Max, and inventory values are in the correct parameters.
-            if(int.Parse(Max.Text) < int.Parse(Min.Text))
+           try
             {
-                MessageBox.Show("The minimum value is greater than the max value.");
-            }
-            if(int.Parse(Max.Text) < int.Parse(InStock.Text) || int.Parse(Min.Text) > int.Parse(InStock.Text))
-            {
-                MessageBox.Show("The Inventory value exceeds the max or minimum value.");
-            }
-                       
+                if (labelTitle.Text == "Add Product")
+                {
+                    ProductID.Text = (Inventory.Products.Count()).ToString();
+
+                    // Sets the objects attributes
+                    _Product.ProductID = int.Parse(ProductID.Text);
+                    _Product.Name = productName.Text;
+                    _Product.InStock = int.Parse(InStock.Text);
+                    _Product.Price = decimal.Parse(Price.Text);
+                    _Product.Max = int.Parse(Max.Text);
+                    _Product.Min = int.Parse(Min.Text);
+
+                    // Adds product to the Product List
+                    Inventory.addProduct(_Product);
+                }
+                else
+                {
+                    // reassigns the data to the new part
+                    updateProduct.ProductID = int.Parse(ProductID.Text);
+                    updateProduct.Name = productName.Text;
+                    updateProduct.InStock = int.Parse(InStock.Text);
+                    updateProduct.Price = decimal.Parse(Price.Text);
+                    updateProduct.Max = int.Parse(Max.Text);
+                    updateProduct.Min = int.Parse(Min.Text);
+
+                    // Passes the part index and the new part
+                    Inventory.updateProduct(_productIndex, updateProduct);
+                }
+                // Makes sure the Min, Max, and inventory values are in the correct parameters.
+                if (int.Parse(Max.Text) < int.Parse(Min.Text))
+                {
+                    MessageBox.Show("The minimum value is greater than the max value.");
+                }
+                if (int.Parse(Max.Text) < int.Parse(InStock.Text) || int.Parse(Min.Text) > int.Parse(InStock.Text))
+                {
+                    MessageBox.Show("The Inventory value exceeds the max or minimum value.");
+                }
+           }
+           catch
+           {
+
+           }
             // Go back to main screen
             MainScreen mainScreen = new MainScreen();
             mainScreen.Show();
